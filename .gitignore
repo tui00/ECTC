@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+
+.vscode/
+.amazonq/
+
+prog.asm
+
+!ExamplePrograms/
+!.vscode/launch.json
