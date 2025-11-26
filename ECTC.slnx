@@ -1,3 +1,7 @@
 <Solution>
-  <Project Path="ECTC/ECTC.csproj" />
+  <Project Path="Assembler/Assembler.csproj" />
+  <Project Path="Emulator/Emulator.csproj" />
+  <Project Path="InstructionTable/InstructionTable.csproj" />
+  <Project Path="Linker/Linker.csproj" />
+  <Project Path="Tools/Tools.csproj" />
 </Solution>
