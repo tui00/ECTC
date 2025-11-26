@@ -3,5 +3,6 @@
   <Project Path="Emulator/Emulator.csproj" />
   <Project Path="InstructionTable/InstructionTable.csproj" />
   <Project Path="Linker/Linker.csproj" />
+  <Project Path="Dto/Dto.csproj" />
   <Project Path="Tools/Tools.csproj" />
 </Solution>
