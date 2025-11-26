@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rid: ['win-x64', 'win-arm64']
+        rid: ['win-x64']
         project: ['Assembler', 'Emulator', 'InstructionTable', 'Linker', 'Tools']
     runs-on: ubuntu-latest
     steps:
