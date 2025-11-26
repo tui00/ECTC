@@ -25,7 +25,7 @@ jobs:
           dotnet-version: 9.0.x
       - name: Publish
         run: |
-          dotnet publish ${{ matrix.project }}/${{ matrix.project }}.csproj --configuration Debug --runtime ${{ matrix.rid }} --output ./publish_${{ matrix.rid }}_${{ matrix.project }} --self-contained false --framework net9.0
+          dotnet publish ${{ matrix.project }}/${{ matrix.project }}.csproj --configuration Debug --runtime ${{ matrix.rid }} --output ./publish_${{ matrix.rid }}_${{ matrix.project }} --self-contained false --framework net452
       - name: Create README.txt
         run: |
           echo "Привет! Чтобы запустить програму, установите .NET Framework 4.5.2" > ./publish_${{ matrix.rid }}_${{ matrix.project }}/README.txt
