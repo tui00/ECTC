@@ -4,4 +4,6 @@
 .vscode/*
 .amazonq/
 
+ToDo.md
+
 !.vscode/launch.json
