@@ -5,12 +5,16 @@ namespace Ectc.InstructionTable
 {
     public class Instruction
     {
-        public InstructionInfo Info { get; }
         public InstructionArgument[] Arguments { get; }
+        public string Mnemonic => info.Mnemonic;
+        public ushort Code => info.Code;
+        public int Size => info.Size;
+
+        private readonly InstructionInfo info;
 
         public Instruction(InstructionInfo info, InstructionArgument[] arguments)
         {
-            Info = info;
+            this.info = info;
             Arguments = arguments;
         }
 
@@ -23,6 +27,18 @@ namespace Ectc.InstructionTable
             if (!candidates.Any())
             {
                 throw new ArgumentException($"Command '{mnemonic}' not found");
+            }
+
+            if (arguments == null)
+            {
+                if (candidates.Any(info => info.Arguments.Length == 0))
+                {
+                    return new Instruction(candidates.First(info => info.Arguments.Length == 0), new InstructionArgument[0]);
+                }
+                else
+                {
+                    throw new ArgumentException($"Command '{mnemonic}' requires arguments");
+                }
             }
 
             var parsedArgs = arguments.Select(InstructionArgument.Parse).ToArray();

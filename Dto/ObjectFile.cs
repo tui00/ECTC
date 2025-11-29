@@ -5,14 +5,14 @@ namespace Ectc.Dto
     public class ObjectFile
     {
         public List<Section> Sections { get; }
-        public List<Symbol> DefinedSymbols { get; }
+        public List<Symbol> Symbols { get; }
         public List<Relocation> Relocations { get; }
 
-        public ObjectFile(List<Section> sections, List<Symbol> definedSymbols, List<Relocation> externalSymbols)
+        public ObjectFile(List<Section> sections, List<Symbol> symbols, List<Relocation> relocations)
         {
             Sections = sections;
-            DefinedSymbols = definedSymbols;
-            Relocations = externalSymbols;
+            Symbols = symbols;
+            Relocations = relocations;
         }
 
         public ushort[] ToWords()
@@ -28,8 +28,8 @@ namespace Ectc.Dto
                 b.Add((ushort)section.Data.Length);
                 b.AddRange(section.Data);
             }
-            b.Add((ushort)DefinedSymbols.Count);
-            foreach (var symbol in DefinedSymbols)
+            b.Add((ushort)Symbols.Count);
+            foreach (var symbol in Symbols)
             {
                 foreach (var c in symbol.Name)
                 {

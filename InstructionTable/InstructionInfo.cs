@@ -1,5 +1,3 @@
-using Ectc.Dto;
-
 namespace Ectc.InstructionTable
 {
     public class InstructionInfo

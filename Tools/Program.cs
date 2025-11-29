@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Ectc.Assembler;
+using Ectc.Dto;
 
 namespace Ectc.Tools
 {
@@ -20,6 +22,9 @@ namespace Ectc.Tools
         /// </returns>
         static int Main(string[] args)
         {
+#if DEBUG
+            args = new string[] { "asm", "prog.txt" };
+#endif
             ITool[] tools = new ITool[] { new AssemblerTool() };
             return new ListTools("tools", "Tools", tools).Run(args, new System.Collections.Generic.List<string>());
         }
@@ -33,6 +38,7 @@ namespace Ectc.Tools
 
         public int Run(string[] args, List<string> rootCommand)
         {
+            Console.WriteLine("Testing arguments...");
             if (args.Length < 1 || args.Contains("-h") || args.Contains("--help"))
             {
                 HelpPrinter.Create(rootCommand, $"{Command}", FullName)
@@ -46,10 +52,22 @@ namespace Ectc.Tools
                     .Print();
                 return 0;
             }
+            if (args.Length > 2)
+            {
+                Console.WriteLine("Too many arguments!");
+                return 1;
+            }
 
             string inputfile = args[0];
+            Console.WriteLine($"Assembling {inputfile}...");
             string outputfile = args.Length > 1 ? args[1] : Path.ChangeExtension(inputfile, ".obj");
-            EctcAssembler.Assemble(File.ReadAllText(inputfile));
+            Console.WriteLine($"Output file: {outputfile}");
+            ObjectFile result = EctcAssembler.Assemble(File.ReadAllText(inputfile));
+            ushort[] words = result.ToWords();
+            byte[] bytes = words.SelectMany(w => BitConverter.GetBytes(w)).ToArray();
+            Console.WriteLine($"Writing to {outputfile}...");
+            File.WriteAllBytes(outputfile, bytes);
+            Console.WriteLine("Done!");
 
             return 0;
         }

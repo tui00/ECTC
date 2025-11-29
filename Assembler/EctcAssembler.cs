@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Ectc.Dto;
+using Ectc.InstructionTable;
 
 namespace Ectc.Assembler
 {
@@ -64,7 +68,40 @@ namespace Ectc.Assembler
 
         private static ObjectFile FirstPass(AsmLine[] code)
         {
-            return default;
+            var symbolsSet = new HashSet<string>();
+            var symbols = new List<Symbol>();
+
+            var relocations = new List<Relocation>(); // TODO
+
+            var sectionsSet = new HashSet<ushort>();
+            var sections = new List<Section>(); // TODO
+
+            ushort nextAddress = 0;
+            for (int i = 0; i < code.Length; i++)
+            {
+                AsmLine line = code[i];
+                try
+                {
+                    if (line.Label != null)
+                    {
+                        if (!symbolsSet.Add(line.Label))
+                            throw new DuplicateNameException($"Symbol {line.Label} already exists");
+                        symbols.Add(new Symbol(line.Label, nextAddress));
+                    }
+
+                    if (line.Operation != null)
+                    {
+                        Instruction instruction = Instruction.Parse(line.Operation, line.Arguments);
+                        nextAddress += (ushort)instruction.Size;
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.Data["LineNumber"] = i;
+                    throw;
+                }
+            }
+            return new ObjectFile(sections, symbols, relocations);
         }
 
         private static ObjectFile SecondPass(AsmLine[] code, ObjectFile firstPass)
