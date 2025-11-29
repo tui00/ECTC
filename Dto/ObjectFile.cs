@@ -15,20 +15,20 @@ namespace Ectc.Dto
             Relocations = externalSymbols;
         }
 
-        public UInt12[] ToWords()
+        public ushort[] ToWords()
         {
-            var b = new List<UInt12>();
+            var b = new List<ushort>();
 
-            b.Add(Sections.Count);
+            b.Add((ushort)Sections.Count);
             foreach (var section in Sections)
             {
-                b.Add(section.IsRelocatable ? 1 : 0);
+                b.Add((ushort)(section.IsRelocatable ? 1 : 0));
                 if (section.IsRelocatable)
                     b.Add(section.Address);
-                b.Add(section.Data.Length);
+                b.Add((ushort)section.Data.Length);
                 b.AddRange(section.Data);
             }
-            b.Add(DefinedSymbols.Count);
+            b.Add((ushort)DefinedSymbols.Count);
             foreach (var symbol in DefinedSymbols)
             {
                 foreach (var c in symbol.Name)
@@ -38,7 +38,7 @@ namespace Ectc.Dto
                 b.Add(0);
                 b.Add(symbol.Address);
             }
-            b.Add(Relocations.Count);
+            b.Add((ushort)Relocations.Count);
             foreach (var symbol in Relocations)
             {
                 foreach (var c in symbol.Name)
@@ -46,7 +46,7 @@ namespace Ectc.Dto
                     b.Add(c);
                 }
                 b.Add(0);
-                b.Add(symbol.Usings.Count);
+                b.Add((ushort)symbol.Usings.Count);
                 b.AddRange(symbol.Usings);
             }
             return b.ToArray();

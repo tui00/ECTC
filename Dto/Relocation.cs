@@ -5,9 +5,9 @@ namespace Ectc.Dto
     public class Relocation
     {
         public string Name { get; }
-        public List<UInt12> Usings { get; }
+        public List<ushort> Usings { get; }
 
-        public Relocation(string name, List<UInt12> usings)
+        public Relocation(string name, List<ushort> usings)
         {
             Name = name;
             Usings = usings;
@@ -16,10 +16,10 @@ namespace Ectc.Dto
         public Relocation(string name)
         {
             Name = name;
-            Usings = new List<UInt12>();
+            Usings = new List<ushort>();
         }
 
-        public void AddUsing(UInt12 usingAddress)
+        public void AddUsing(ushort usingAddress)
         {
             Usings.Add(usingAddress);
         }
