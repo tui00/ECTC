@@ -46,9 +46,9 @@ namespace Ectc.Tools
             return this;
         }
 
-        public HelpPrinter AddNote(string note, string description)
+        public HelpPrinter AddNote(string note)
         {
-            notes.Add($"{note.PadRight(descColumn)}{description}");
+            notes.Add($"{note}");
             return this;
         }
 

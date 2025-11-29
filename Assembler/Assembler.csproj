@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dto\Dto.csproj" />
+    <ProjectReference Include="..\InstructionTable\InstructionTable.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

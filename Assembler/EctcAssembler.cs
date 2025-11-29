@@ -4,7 +4,7 @@ using Ectc.Dto;
 
 namespace Ectc.Assembler
 {
-    public static class Assembler
+    public static class EctcAssembler
     {
         private sealed class AsmLine
         {
