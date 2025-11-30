@@ -142,7 +142,12 @@ namespace Ectc.Assembler
 
         private static ObjectFile SecondPass(AsmLine[] code, ObjectFile firstPass)
         {
+            // TODO
+#if DEBUG
+            return firstPass;
+#else
             throw new NotImplementedException();
+#endif
         }
 
         private static bool TryParse(string value, out ushort output)
