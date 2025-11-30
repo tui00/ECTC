@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Ectc.Dto;
 using Ectc.InstructionTable;
 
@@ -15,18 +14,25 @@ namespace Ectc.Assembler
             public string Label { get; }
             public string Operation { get; }
             public string[] Arguments { get; }
+            public int LineNumber { get; }
 
-            public AsmLine(string label, string operation, string[] arguments)
+            public AsmLine(string label, string operation, string[] arguments, int lineNumber)
             {
                 Label = label;
                 Operation = operation;
                 Arguments = arguments;
+                LineNumber = lineNumber;
             }
 
-            public static AsmLine Parse(string line)
+            public static AsmLine Parse(string line, int lineNumber)
             {
-                if (string.IsNullOrWhiteSpace(line))
-                    throw new ArgumentNullException(nameof(line), "Line is null or empty");
+                if (line == null)
+                    throw new ArgumentNullException(nameof(line), "Line is null");
+                line = line.Trim();
+                if (line.Length == 0)
+                {
+                    return new AsmLine(null, null, null, lineNumber);
+                }
 
                 if (line.Contains(";"))
                     line = line.Substring(line.IndexOf(";"));
@@ -41,7 +47,7 @@ namespace Ectc.Assembler
 
                 string operation = null;
                 string[] arguments = null;
-                if (!string.IsNullOrWhiteSpace(line))
+                if (!string.IsNullOrEmpty(line))
                 {
                     string[] parts = line.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
                     operation = parts[0].Trim();
@@ -55,13 +61,13 @@ namespace Ectc.Assembler
                     }
                 }
 
-                return new AsmLine(label, operation, arguments);
+                return new AsmLine(label, operation, arguments, lineNumber);
             }
         }
 
         public static ObjectFile Assemble(string sourceCode)
         {
-            AsmLine[] code = sourceCode.Replace("\r", "").Split('\n').Select(AsmLine.Parse).ToArray();
+            var code = sourceCode.Replace("\r", "").Split('\n').Select(AsmLine.Parse).ToArray();
             ObjectFile result = SecondPass(code, FirstPass(code));
             return result;
         }
@@ -71,42 +77,109 @@ namespace Ectc.Assembler
             var symbolsSet = new HashSet<string>();
             var symbols = new List<Symbol>();
 
-            var relocations = new List<Relocation>(); // TODO
-
-            var sectionsSet = new HashSet<ushort>();
-            var sections = new List<Section>(); // TODO
+            var relocationsSet = new HashSet<string>();
+            var relocations = new Dictionary<string, Relocation>();
 
             ushort nextAddress = 0;
             for (int i = 0; i < code.Length; i++)
             {
-                AsmLine line = code[i];
+                ProcesLine(code[i], i);
+            }
+
+            return new ObjectFile(new List<Section>(), symbols, relocations.Values.ToList());
+
+            void AddSymbol(string label)
+            {
+                if (!symbolsSet.Add(label))
+                    throw new DuplicateNameException($"Symbol {label} already exists");
+                symbols.Add(new Symbol(label, nextAddress));
+            }
+
+            void AddRelocations(string[] arguments)
+            {
+                foreach (var argument in arguments.Where(relocationsSet.Add))
+                {
+                    relocations.Add(argument, new Relocation(argument));
+                }
+
+                foreach (var argument in arguments)
+                {
+                    relocations[argument].AddUsing((ushort)(nextAddress + 1));
+                }
+            }
+
+            void ProcesInstruction(Instruction instruction)
+            {
+                if (instruction.Arguments != null)
+                {
+                    var labels = instruction.Arguments?
+                        .Where(arg => arg.Type == InstructionArgumentType.LabelOrImmediate)
+                        .Where(arg => !TryParse(arg.Value, out _))
+                        .Select(arg => arg.Value)
+                        .ToArray();
+                    AddRelocations(labels);
+                }
+                nextAddress += (ushort)instruction.Size;
+            }
+
+            void ProcesLine(AsmLine line, int lineNumber)
+            {
                 try
                 {
                     if (line.Label != null)
-                    {
-                        if (!symbolsSet.Add(line.Label))
-                            throw new DuplicateNameException($"Symbol {line.Label} already exists");
-                        symbols.Add(new Symbol(line.Label, nextAddress));
-                    }
+                        AddSymbol(line.Label);
 
                     if (line.Operation != null)
-                    {
-                        Instruction instruction = Instruction.Parse(line.Operation, line.Arguments);
-                        nextAddress += (ushort)instruction.Size;
-                    }
+                        ProcesInstruction(Instruction.Parse(line.Operation, line.Arguments));
                 }
                 catch (Exception e)
                 {
-                    e.Data["LineNumber"] = i;
+                    e.Data["LineNumber"] = lineNumber;
                     throw;
                 }
             }
-            return new ObjectFile(sections, symbols, relocations);
         }
 
         private static ObjectFile SecondPass(AsmLine[] code, ObjectFile firstPass)
         {
-            return firstPass;
+            throw new NotImplementedException();
+        }
+
+        private static bool TryParse(string value, out ushort output)
+        {
+            try
+            {
+                value = value.Trim();
+                if (value.StartsWith("0x"))
+                {
+                    output = Convert.ToUInt16(value.Substring(2), 16);
+                    return true;
+                }
+                else if (value.StartsWith("0b"))
+                {
+                    output = Convert.ToUInt16(value.Substring(2), 2);
+                    return true;
+                }
+                else if (value.StartsWith("0") && value.Length > 1)
+                {
+                    output = Convert.ToUInt16(value.Substring(2), 8);
+                    return true;
+                }
+                else if (value.StartsWith("-") && short.TryParse(value, out short tmp))
+                {
+                    output = (ushort)tmp;
+                    return true;
+                }
+                else
+                {
+                    return ushort.TryParse(value, out output);
+                }
+            }
+            catch
+            {
+                output = 0;
+                return false;
+            }
         }
     }
 }
