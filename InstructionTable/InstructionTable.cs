@@ -55,7 +55,7 @@ namespace Ectc.InstructionTable
             new InstructionInfo("XCNG",  1, 0x25, TwoRegisters        ),
         };
 
-        private static readonly Dictionary<ushort, InstructionInfo> codeTable = table.ToDictionary(x => x.Code, x => x);
+        private static readonly Dictionary<ushort, InstructionInfo> codeTable = table.ToDictionary(x => x.BaseCode, x => x);
 
         public static Dictionary<ushort, InstructionInfo> CodeTable => codeTable;
     }

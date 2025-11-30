@@ -7,7 +7,29 @@ namespace Ectc.InstructionTable
     {
         public InstructionArgument[] Arguments { get; }
         public string Mnemonic => info.Mnemonic;
-        public ushort Code => info.Code;
+        public ushort Code
+        {
+            get
+            {
+                byte registers = 0;
+                InstructionArgument[] registerArmguments = Arguments.Where(arg => arg.Type == InstructionArgumentType.Register).ToArray();
+                for (int i = 0; i < registerArmguments.Length; i++)
+                {
+                    byte regNum = 0;
+                    string regName = registerArmguments[i].Value.ToUpper();
+                    if (regName == "A") regNum = 0;
+                    else if (regName == "B") regNum = 1;
+                    else if (regName == "C") regNum = 2;
+                    else if (regName == "D") regNum = 3;
+                    else if (regName == "PC") regNum = 4;
+                    else if (regName == "SP") regNum = 5;
+                    else if (regName == "FLAGS") regNum = 6;
+                    registers |= (byte)(regNum << (i * 4));
+                }
+                return (ushort)(info.BaseCode << 8 | registers);
+            }
+        }
+
         public int Size => info.Size;
 
         private readonly InstructionInfo info;
