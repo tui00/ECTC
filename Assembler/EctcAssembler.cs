@@ -170,7 +170,7 @@ namespace Ectc.Assembler
                     if (line.Label != null)
                         AddSymbol(line.Label);
 
-                    if (line.Operation != null)
+                    if (!line.Operation?.StartsWith(".") == true)
                         ProcesInstruction(Instruction.Parse(line.Operation, line.Arguments));
                 }
                 catch (Exception e)
@@ -183,12 +183,117 @@ namespace Ectc.Assembler
 
         private static ObjectFile SecondPass(AsmLine[] code, ObjectFile firstPass)
         {
-            // TODO
-#if DEBUG
-            return firstPass;
-#else
-            throw new NotImplementedException();
-#endif
+            var symbols = firstPass.Symbols;
+            var relocations = firstPass.Relocations.ToDictionary(r => r.Name, r => r.Usings);
+
+            var chunks = SplitByOrg(code);
+            var sections = new Dictionary<ushort, Section>();
+            var sectionsSet = new HashSet<ushort>();
+
+            foreach (var chunk in chunks)
+            {
+                var section = AssemblyChunkToSection(chunk, relocations);
+                if (!sectionsSet.Add(chunk.Org))
+                    throw new DuplicateNameException($"Section with address '{chunk.Org}' already exists");
+
+                sections.Add(chunk.Org, section);
+            }
+
+            return new ObjectFile(sections.Values.ToList(), symbols, firstPass.Relocations);
+        }
+
+
+        private sealed class SectionChunk
+        {
+            public ushort Org { get; }
+            public List<AsmLine> Lines { get; }
+
+            public SectionChunk(ushort org)
+            {
+                Org = org;
+                Lines = new List<AsmLine>();
+            }
+        }
+
+        private static List<SectionChunk> SplitByOrg(AsmLine[] code)
+        {
+            var result = new List<SectionChunk>();
+            ushort currentOrg = 0;
+            var currentChunk = new SectionChunk(currentOrg);
+
+            foreach (var line in code)
+            {
+                if (!string.IsNullOrEmpty(line.Operation) && line.Operation == ".org")
+                {
+                    result.Add(currentChunk);
+                    if (line.Arguments == null || line.Arguments.Length != 1)
+                        throw new ArgumentException("Invalid number of arguments for '.org' directive");
+                    if (!TryParse(line.Arguments[0], out currentOrg))
+                        throw new ArgumentException("Invalid argument for '.org' directive");
+                    currentChunk = new SectionChunk(currentOrg);
+                    continue;
+                }
+
+                currentChunk.Lines.Add(line);
+            }
+
+            result.Add(currentChunk);
+            return result;
+        }
+
+        private static Section AssemblyChunkToSection(SectionChunk chunk, Dictionary<string, List<ushort>> relocations)
+        {
+            var words = new Dictionary<ushort, ushort>();
+            ushort nextAddress = 0;
+
+            foreach (var line in chunk.Lines)
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(line.Operation)) continue;
+                    ProcessInstruction(Instruction.Parse(line.Operation, line.Arguments));
+                }
+                catch (Exception e)
+                {
+                    e.Data["LineNumber"] = line.LineNumber;
+                    throw;
+                }
+            }
+
+            ushort maxIndex = words.Keys.Max();
+
+            var sectionArray = new ushort[maxIndex + 1];
+            foreach (var kv in words)
+                sectionArray[kv.Key] = kv.Value;
+
+            return new Section(sectionArray, chunk.Org);
+
+            void ProcessInstruction(Instruction instruction)
+            {
+                if (instruction == null)
+                    throw new ArgumentNullException(nameof(instruction));
+
+                var labelArgs = instruction.Arguments?
+                    .Where(arg => arg.Type == InstructionArgumentType.LabelOrImmediate)
+                    .Select(arg => arg.Value)
+                    .ToArray() ?? new string[] { };
+
+                words[nextAddress] = instruction.Code;
+
+                for (int argIndex = 0; argIndex < labelArgs.Length; argIndex++)
+                {
+                    string arg = labelArgs[argIndex];
+                    var argAddr = (ushort)(nextAddress + 1 + argIndex);
+
+                    // Если аргумент метка и его нет в списке релокаций
+                    if (!TryParse(arg, out ushort value) && !(relocations.TryGetValue(arg, out var uses) && uses.Contains(argAddr)))
+                        throw new ArgumentException($"Unknown label '{arg}'");
+
+                    words[argAddr] = value;
+                }
+
+                nextAddress = (ushort)(nextAddress + instruction.Size);
+            }
         }
 
         private static bool TryParse(string value, out ushort output)
