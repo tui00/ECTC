@@ -43,6 +43,7 @@ namespace Ectc.Assembler
                 {
                     label = line.Substring(0, line.IndexOf(":"));
                     line = line.Substring(line.IndexOf(":") + 1).Trim();
+                    TestLabel(label);
                 }
 
                 string operation = null;
@@ -63,12 +64,51 @@ namespace Ectc.Assembler
 
                 return new AsmLine(label, operation, arguments, lineNumber);
             }
+
+            private static void TestLabel(string label)
+            {
+                if (string.IsNullOrEmpty(label))
+                    throw new ArgumentException("Label is null or empty", nameof(label));
+
+                if (label.Contains(" "))
+                {
+                    throw new ArgumentException("Label cannot contain spaces", nameof(label));
+                }
+                if (label.Contains(":"))
+                {
+                    throw new ArgumentException("Label cannot contain ':'", nameof(label));
+                }
+
+                bool charsCorrect = label.All(c => char.IsLetterOrDigit(c) || c == '_');
+                if (char.IsDigit(label[0]))
+                {
+                    throw new ArgumentException("Label cannot start with a digit", nameof(label));
+                }
+                if (!charsCorrect)
+                {
+                    throw new ArgumentException("Label contains invalid characters", nameof(label));
+                }
+            }
         }
 
         public static ObjectFile Assemble(string sourceCode)
         {
-            var code = sourceCode.Replace("\r", "").Split('\n').Select(AsmLine.Parse).ToArray();
-            ObjectFile result = SecondPass(code, FirstPass(code));
+            var code = new List<AsmLine>();
+            string[] formatedCode = sourceCode.Replace("\r", "").Split('\n');
+            for (int i = 0; i < formatedCode.Length; i++)
+            {
+                string line = formatedCode[i];
+                try
+                {
+                    code.Add(AsmLine.Parse(line, code.Count));
+                }
+                catch (Exception e)
+                {
+                    e.Data["LineNumber"] = i;
+                    throw;
+                }
+            }
+            ObjectFile result = SecondPass(code.ToArray(), FirstPass(code.ToArray()));
             return result;
         }
 
@@ -102,9 +142,10 @@ namespace Ectc.Assembler
                     relocations.Add(argument, new Relocation(argument));
                 }
 
-                foreach (var argument in arguments)
+                for (int i = 0; i < arguments.Length; i++)
                 {
-                    relocations[argument].AddUsing((ushort)(nextAddress + 1));
+                    string argument = arguments[i];
+                    relocations[argument].AddUsing((ushort)(nextAddress + 1 + i));
                 }
             }
 
