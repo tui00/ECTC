@@ -5,11 +5,12 @@ namespace Ectc.InstructionTable
         public string Mnemonic { get; }
         public ushort Code { get; }
         public InstructionArgumentType[] Arguments { get; }
-        public int Size => Arguments.Length + 1;
+        public int Size { get; }
 
-        public InstructionInfo(string mnemonic, ushort opcode, InstructionArgumentType[] arguments)
+        public InstructionInfo(string mnemonic, int size, ushort opcode, InstructionArgumentType[] arguments)
         {
             Mnemonic = mnemonic;
+            Size = size;
             Code = opcode;
             Arguments = arguments;
         }
