@@ -174,15 +174,12 @@ namespace Ectc.Assembler
                 .ToArray();
             foreach (var argument in arguments)
             {
-                var value = argument;
-
-                if (TryParse(value, out _))
+                if (TryParse(argument, out _))
                     continue;
 
-                if (!relocations.TryGetValue(value, out var rel))
+                if (!relocations.TryGetValue(argument, out var rel))
                 {
-                    rel = new Relocation(value);
-                    relocations[value] = rel;
+                    relocations[argument] = rel = new Relocation(argument);
                 }
 
                 rel.AddUsing((ushort)(chunk.Org + nextAddr + 1));
@@ -268,8 +265,7 @@ namespace Ectc.Assembler
                     var argAddr = (ushort)(addr + 1 + i);
                     var arg = labelArgs[i];
 
-                    if (!TryParse(arg, out var val) &&
-                        !(relocations.TryGetValue(arg, out var uses) && uses.Contains(argAddr)))
+                    if (!TryParse(arg, out var val) && !(relocations.TryGetValue(arg, out var uses) && uses.Contains((ushort)(chunk.Org + argAddr))))
                         throw new ArgumentException($"Unknown label '{arg}'");
 
                     words[argAddr] = val;

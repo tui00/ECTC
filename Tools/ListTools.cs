@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Ectc.Tools
@@ -49,8 +50,8 @@ namespace Ectc.Tools
                     return tool.Run(args.Skip(1).ToArray(), rootCommand);
                 }
             }
-
-            return 0;
+            Console.WriteLine($"Tool '{args[0]}' not found!");
+            return 1;
         }
     }
 }

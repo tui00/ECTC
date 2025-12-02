@@ -15,7 +15,7 @@ namespace Ectc.InstructionTable
 
         public static InstructionArgument Parse(string value)
         {
-            if ((new[] { "A", "B", "C", "D" }).Contains(value.ToUpper()))
+            if ((new[] { "A", "B", "C", "D", "SP", "PC", "FLAGS" }).Contains(value.ToUpper()))
             {
                 return new InstructionArgument(InstructionArgumentType.Register, value);
             }

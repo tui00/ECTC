@@ -16,9 +16,9 @@ namespace Ectc.Tools
         static int Main(string[] args)
         {
 #if DEBUG
-            args = new string[] { "asm", "prog.txt" };
+            args = new string[] { "link", "prog.bin", "prog.obj" };
 #endif
-            ITool[] tools = new ITool[] { new AssemblerTool() };
+            ITool[] tools = new ITool[] { new AssemblerTool(), new LinkerTool() };
             return new ListTools("tools", "Tools", tools).Run(args, new System.Collections.Generic.List<string>());
         }
     }

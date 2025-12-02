@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Assembler\Assembler.csproj" />
+    <ProjectReference Include="..\Linker\Linker.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
