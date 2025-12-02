@@ -4,8 +4,8 @@ namespace Ectc.Dto
 {
     public class Relocation
     {
-        public string Name { get; }
-        public List<ushort> Usings { get; }
+        public string Name { get; set; }
+        public List<ushort> Usings { get; set; }
 
         public Relocation(string name, List<ushort> usings)
         {
@@ -16,6 +16,12 @@ namespace Ectc.Dto
         public Relocation(string name)
         {
             Name = name;
+            Usings = new List<ushort>();
+        }
+
+        public Relocation()
+        {
+            Name = "";
             Usings = new List<ushort>();
         }
 

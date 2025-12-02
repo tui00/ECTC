@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/Tools/bin/Debug/net452/Tools.exe",
             "cwd": "${workspaceFolder}/Tools/bin/Debug/net452/",
             "console": "integratedTerminal",
-            "preLaunchTask": "dotnet: build d:\\F\\G\\lng\\C# 2\\ECTC\\Tools\\Tools.csproj"
+            "preLaunchTask": "dotnet: build"
         }
     ]
 }
