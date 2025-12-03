@@ -20,24 +20,21 @@ namespace Ectc.Tools
             {
                 if (args.Length == 0 || args.Contains("-h") || args.Contains("--help"))
                 {
-                    var hp = HelpPrinter.Create(rootCommand, $"{Command}", FullName)
+                    HelpPrinter.Create(rootCommand, $"{Command}", FullName)
                         .SetDescription("Linking the file into an bytes (.bin)")
                         .AddUsage("<input ..> <output>")
                         .AddArgument("input ..", "The input file paths")
                         .AddArgument("output", "The output file path")
                         .AddExample("syslib.bin syslib.obj")
-                        .AddExample("out.bin prog.obj syslib.obj");
-                    hp.Print();
+                        .AddExample("out.bin prog.obj syslib.obj")
+                        .AddNote("If no output file is specified, the name of the first input file will be used with the extension changed to .bin")
+                        .Print();
                     return 0;
-                }
-                if (args.Length < 2)
-                {
-                    Console.WriteLine("Too few arguments!");
-                    Console.WriteLine(ExitingMsg);
-                    return 1;
                 }
                 string outputfile = args[args.Length - 1];
                 string[] inputfiles = args.Take(args.Length - 1).ToArray();
+                if (args.Length == 1)
+                    outputfile = Path.ChangeExtension(inputfiles[0], ".bin");
                 if (!inputfiles.All(File.Exists))
                 {
                     Console.WriteLine($"Input file(s) '{string.Join(", ", inputfiles.Where(inputfile => !File.Exists(inputfile)))}' do(es) not exist!");

@@ -21,15 +21,15 @@ namespace Ectc.Tools
             {
                 if (args.Length < 1 || args.Contains("-h") || args.Contains("--help"))
                 {
-                    var hp = HelpPrinter.Create(rootCommand, $"{Command}", FullName)
+                    HelpPrinter.Create(rootCommand, $"{Command}", FullName)
                         .SetDescription("Assembles the file into an object file(.obj)")
                         .AddUsage("<input> [<output>]")
                         .AddArgument("output", "The output file path")
                         .AddArgument("input", "The input file path")
                         .AddExample("syslib.asm syslib.obj")
                         .AddExample("syslib.asm")
-                        .AddNote("If the name of the output file is not provided, a new file with the same name but with the extension .obj will be generated.");
-                    hp.Print();
+                        .AddNote("If the name of the output file is not provided, a new file with the same name but with the extension .obj will be generated.")
+                        .Print();
                     return 0;
                 }
                 if (args.Length > 2)
