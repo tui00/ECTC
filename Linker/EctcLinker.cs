@@ -12,7 +12,7 @@ namespace Ectc.Linker
         {
             FirstPassResult firstPass = FirstPass(files);
             var secondPass = SecondPass(firstPass);
-            return secondPass;
+            return secondPass.SelectMany(BitConverter.GetBytes).ToArray();
         }
 
         private sealed class FirstPassResult
@@ -65,10 +65,24 @@ namespace Ectc.Linker
             return new FirstPassResult(symbols, relocations, sections);
         }
 
-        private static byte[] SecondPass(FirstPassResult firstPass)
+        private static ushort[] SecondPass(FirstPassResult firstPass)
         {
             // TODO: Просто объеденить секции заменив значения по Usings в релокациях на Address из Symbols[rel.Name]
-            throw new NotImplementedException();
+            int length = firstPass.Sections.Max(x => x.Address + x.Data.Length);
+            ushort[] code = new ushort[length];
+            foreach (var section in firstPass.Sections)
+            {
+                Array.Copy(section.Data, 0, code, section.Address, section.Data.Length);
+            }
+            foreach (var relocation in firstPass.Relocations)
+            {
+                var symbol = firstPass.Symbols.Find(x => x.Name == relocation.Name);
+                foreach (var use in relocation.Usings)
+                {
+                    code[use] = symbol.Address;
+                }
+            }
+            return code;
         }
     }
 }

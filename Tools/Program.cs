@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Concurrent;
+
 namespace Ectc.Tools
 {
     /// <summary>
@@ -5,6 +8,10 @@ namespace Ectc.Tools
     /// </summary>
     internal static class Program
     {
+#if DEBUG
+        private static bool runned = false;
+#endif
+
         /// <summary>
         /// The main entry point method for the application.
         /// </summary>
@@ -16,7 +23,13 @@ namespace Ectc.Tools
         static int Main(string[] args)
         {
 #if DEBUG
-            args = new string[] { "link", "prog.bin", "prog.obj" };
+            if (!runned)
+            {
+                runned = true;
+                Main(new string[] { "asm", "prog.txt" });
+                Main(new string[] { "link", "prog.obj", "prog.bin" });
+                return 0;
+            }
 #endif
             ITool[] tools = new ITool[] { new AssemblerTool(), new LinkerTool() };
             return new ListTools("tools", "Tools", tools).Run(args, new System.Collections.Generic.List<string>());

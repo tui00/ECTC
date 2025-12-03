@@ -22,7 +22,7 @@ namespace Ectc.Tools
                 {
                     var hp = HelpPrinter.Create(rootCommand, $"{Command}", FullName)
                         .SetDescription("Linking the file into an bytes (.bin)")
-                        .AddUsage("<output> <input ..>")
+                        .AddUsage("<input ..> <output>")
                         .AddArgument("input ..", "The input file paths")
                         .AddArgument("output", "The output file path")
                         .AddExample("syslib.bin syslib.obj")
@@ -36,8 +36,8 @@ namespace Ectc.Tools
                     Console.WriteLine(ExitingMsg);
                     return 1;
                 }
-                string outputfile = args[0];
-                string[] inputfiles = args.Skip(1).ToArray();
+                string outputfile = args[args.Length - 1];
+                string[] inputfiles = args.Take(args.Length - 1).ToArray();
                 if (!inputfiles.All(File.Exists))
                 {
                     Console.WriteLine($"Input file(s) '{string.Join(", ", inputfiles.Where(inputfile => !File.Exists(inputfile)))}' do(es) not exist!");
