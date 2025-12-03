@@ -67,7 +67,6 @@ namespace Ectc.Linker
 
         private static ushort[] SecondPass(FirstPassResult firstPass)
         {
-            // TODO: Просто объеденить секции заменив значения по Usings в релокациях на Address из Symbols[rel.Name]
             int length = firstPass.Sections.Max(x => x.Address + x.Data.Length);
             ushort[] code = new ushort[length];
             foreach (var section in firstPass.Sections)
